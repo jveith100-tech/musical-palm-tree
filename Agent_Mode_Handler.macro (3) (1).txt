@@ -1,0 +1,31 @@
+{
+  "name": "Agent Mode Handler",
+  "description": "Handles Manus/Marco agent commands with full phone control.",
+  "enabled": true,
+  "trigger": {
+    "type": "WebhookTrigger",
+    "url": "https://trigger.macrodroid.com/c015b9b4-3f72-4048-bcfc-f2d4fc730a52/agentenablewebhook"
+  },
+  "actions": [
+    { "type": "SetVariable", "name": "%cmd", "value": "%webhook_data" },
+    { "type": "Lowercase", "variable": "%cmd" },
+    { "type": "ReplaceText", "variable": "%cmd", "match": " ", "replace": "" },
+    { "type": "If", "condition": "%cmd CONTAINS opentiktok", "actions": [ { "type": "LaunchApp", "app": "com.zhiliaoapp.musically" } ] },
+    { "type": "If", "condition": "%cmd CONTAINS openyoutube", "actions": [ { "type": "LaunchApp", "app": "com.google.android.youtube" } ] },
+    { "type": "If", "condition": "%cmd CONTAINS opencapcut", "actions": [ { "type": "LaunchApp", "app": "com.lemon.lvoverseas" } ] },
+    { "type": "If", "condition": "%cmd CONTAINS home", "actions": [ { "type": "GlobalAction", "action": "home" } ] },
+    { "type": "If", "condition": "%cmd CONTAINS back", "actions": [ { "type": "GlobalAction", "action": "back" } ] },
+    { "type": "If", "condition": "%cmd CONTAINS recents", "actions": [ { "type": "GlobalAction", "action": "recents" } ] },
+    { "type": "If", "condition": "%cmd CONTAINS volumeup", "actions": [ { "type": "VolumeChange", "stream": "media", "amount": 1 } ] },
+    { "type": "If", "condition": "%cmd CONTAINS volumedown", "actions": [ { "type": "VolumeChange", "stream": "media", "amount": -1 } ] },
+    { "type": "If", "condition": "%cmd CONTAINS mute", "actions": [ { "type": "VolumeChange", "stream": "media", "amount": 0 } ] },
+    { "type": "If", "condition": "%cmd CONTAINS brightnessup", "actions": [ { "type": "BrightnessChange", "amount": 10 } ] },
+    { "type": "If", "condition": "%cmd CONTAINS brightnessdown", "actions": [ { "type": "BrightnessChange", "amount": -10 } ] },
+    { "type": "If", "condition": "%cmd CONTAINS tap", "actions": [ { "type": "Split", "variable": "%cmd", "delimiter": "tap" }, { "type": "Split", "variable": "%cmd2", "delimiter": "," }, { "type": "UIInteraction", "action": "tap", "x": "%cmd2(1)", "y": "%cmd2(2)" } ] },
+    { "type": "If", "condition": "%cmd CONTAINS swipe", "actions": [ { "type": "Split", "variable": "%cmd", "delimiter": "swipe" }, { "type": "Split", "variable": "%cmd2", "delimiter": "," }, { "type": "UIInteraction", "action": "swipe", "x1": "%cmd2(1)", "y1": "%cmd2(2)", "x2": "%cmd2(3)", "y2": "%cmd2(4)" } ] },
+    { "type": "If", "condition": "%cmd CONTAINS type", "actions": [ { "type": "Split", "variable": "%cmd", "delimiter": "type" }, { "type": "UIInteraction", "action": "text", "text": "%cmd2" } ] },
+    { "type": "If", "condition": "%cmd CONTAINS scrolldown", "actions": [ { "type": "UIInteraction", "action": "swipe", "x1": "500", "y1": "1600", "x2": "500", "y2": "400" } ] },
+    { "type": "If", "condition": "%cmd CONTAINS scrollup", "actions": [ { "type": "UIInteraction", "action": "swipe", "x1": "500", "y1": "400", "x2": "500", "y2": "1600" } ] },
+    { "type": "If", "condition": "%cmd CONTAINS screenshot", "actions": [ { "type": "GlobalAction", "action": "screenshot" } ] }
+  ]
+}

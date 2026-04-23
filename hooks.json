@@ -1,0 +1,5 @@
+{
+  "pre-run": "echo 'Initializing automation run...'",
+  "post-run": "echo 'Automation run complete. Generating summary...'",
+  "on-failure": "echo 'Error detected. Triggering fault-diagnosis skill...'"
+}
