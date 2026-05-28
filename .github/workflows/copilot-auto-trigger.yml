@@ -1,0 +1,83 @@
+name: Copilot Auto-Trigger
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+  workflow_run:
+    workflows: ["*"]
+    types: [completed]
+  issues:
+    types: [opened, labeled]
+
+jobs:
+
+  copilot-pr-review:
+    name: Trigger Copilot PR Review
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Post Copilot review request
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.pull_request.number,
+              body: '@copilot Please review this pull request. Identify any bugs, security issues, or improvements. Summarize what changed and whether it is safe to merge.'
+            });
+
+  copilot-fix-failure:
+    name: Trigger Copilot on CI Failure
+    if: github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'failure'
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - name: Open fix issue and assign to Copilot
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const run = context.payload.workflow_run;
+            const issue = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: 'Fix failing workflow: ' + run.name + ' on ' + run.head_branch,
+              body: '## Automated Fix Request\n\nThe workflow **' + run.name + '** failed on branch `' + run.head_branch + '`.\n\n**Commit:** ' + run.head_sha + '\n**Run:** ' + run.html_url + '\n\n@copilot Please investigate this failure and push a fix on a new branch, then open a pull request.',
+              labels: ['bug', 'copilot']
+            });
+            await github.rest.issues.addAssignees({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issue.data.number,
+              assignees: ['copilot']
+            });
+
+  copilot-auto-assign:
+    name: Assign Copilot-labeled Issues
+    if: github.event_name == 'issues' && github.event.label.name == 'copilot'
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - name: Assign issue to Copilot agent
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            await github.rest.issues.addAssignees({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.issue.number,
+              assignees: ['copilot']
+            });
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.issue.number,
+              body: '@copilot You have been automatically assigned this issue. Please implement a solution and open a pull request.'
+            });
