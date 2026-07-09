@@ -1,99 +1,51 @@
-# Musical Palm Tree — Android One‑Tap AI Video Agent
+# The Fractured Nexus Workspace
 
-## Overview
-Musical Palm Tree is an Android-first, one-tap video agent that uses Tasker (or MacroDroid) + Termux to trigger an AI-powered backend for fully automated short video creation. The project leverages Pixelle-Video (AIDC-AI) as a modular backend for script writing, image/video generation, TTS, and video stitching.
+This repository contains essential setup files and documentation for *The Eternal Rift* universe, specifically for Book One: *The Fractured Nexus*.
 
-## Goals
-- Accept a short text prompt on the phone (Tasker input).
-- Generate scene images or short clips from the prompt (AI models).
-- Synthesize narration audio (TTS).
-- Stitch media into a final MP4 (FFmpeg).
-- Deliver the final video back to the Android device for preview/sharing.
+## Workspace Layout (Google Drive)
 
-## Architecture
-- Android (Tasker/MacroDroid)
-  - Webhook trigger: sends prompt and options to Termux or a local HTTP bridge.
-  - UI: one-tap action, simple prompt input, progress notifications.
-- Termux (on-device execution)
-  - Orchestrates backend calls and local scripts.
-  - Runs wrapper scripts that call Pixelle-Video or local ComfyUI/LLM/TTS services.
-- Backend (Pixelle-Video or local replacement)
-  - LLM for script & storyboard generation.
-  - ComfyUI / image/video model for visuals.
-  - Edge-TTS / Index-TTS / local TTS for narration audio.
-  - FFmpeg for stitching.
+The primary creative workspace is structured on Google Drive to organize all project assets. The root folder is named "The Fractured Nexus Workspace" and contains the following subfolders:
 
-## Quick Start (recommended path)
-1. Install Termux and Tasker/MacroDroid on your Android device.
-2. Clone this repository to a folder readable by Termux:
-   ```bash
-   pkg install git python ffmpeg
-   git clone https://github.com/jveith100-tech/musical-palm-tree.git
-   cd musical-palm-tree
-   ```
-3. Install small helper scripts in Termux (examples provided in `termux/`):
-   - `termux/prompt_handler.py` — formats prompts and calls the backend.
-   - `termux/generate_video.sh` — orchestrates scene generation, TTS, and ffmpeg stitching.
-4. Configure Tasker:
-   - Create a one-tap task that collects a prompt (Input -> Variable %prompt).
-   - Send the prompt to Termux: am startservice --user 0 -n com.termux/.app.TermuxService --es "cmd" "python3 /data/data/com.termux/files/home/musical-palm-tree/termux/prompt_handler.py --prompt '%prompt%'"
-   - Alternatively use an HTTP webhook to a local bridge running in Termux: `python3 -m http.server 9000` and a small Flask script to receive JSON.
+- **00_START_HERE**: Initial setup instructions and project overview.
+- **01_MANUSCRIPT**: Where the main manuscript draft (`Aetherion_and_Kazeon_Book_One_The_Fractured_Nexus_Draft_v1.docx`) should be placed.
+- **02_CANON**: Contains canon-related documents, including the Chapter Revision Checklist.
+- **03_STORY_BIBLE**: Houses the comprehensive Story Bible for the project.
+- **04_TEMPLATES**: Any writing templates or structural outlines.
+- **05_COPILOT_STUDIO_AGENT_SETUP**: Files related to the Copilot Studio agent configuration.
 
-## Using Pixelle-Video as backend
-Pixelle-Video already implements most of the pipeline (script → images/video → TTS → stitch). You can either run Pixelle-Video on a separate machine (recommended if your phone lacks GPU) or wrap its API and call it from Termux.
+**Google Drive Links:**
+- **Root Folder**: [The Fractured Nexus Workspace](https://drive.google.com/drive/folders/1UiZPXPcfG0ewi0TVQf-fvZSRr5AhmQb1)
+- **Story Bible**: [The Fractured Nexus Story Bible](https://docs.google.com/document/d/1EzOVr9l0KgJUruvYPhLjwP01K8Zf9K4DOn0vOrOD92o/edit)
+- **Chapter Revision Checklist**: [The Fractured Nexus Chapter Revision Checklist](https://docs.google.com/document/d/17K4CD83htjk61mLKkk7nUmJmZcjOdnRt7CUGWV22sOI/edit)
 
-Example Termux wrapper (simplified):
+## Copilot Studio Agent Configuration
 
-termux/wrapper.py
-```python
-import requests
-import sys
-prompt = sys.argv[1]
-API = 'http://<pixelle-host>:8501/api/generate'
-resp = requests.post(API, json={'prompt': prompt, 'format':'short'})
-# download result and place into ~/storage/shared/Movies/
-```
+To set up the custom **Fractured Nexus Story Editor** agent within Copilot Studio, follow these steps:
 
-## Files & Layout
-- README.md — this document
-- Agent_Mode_Handler.macro...txt — Tasker/MacroDroid macro exported
-- hooks.json — pre/post run hooks
-- termux/
-  - prompt_handler.py (example)
-  - generate_video.sh (example shell orchestrator)
-  - wrapper.py (calls remote Pixelle-Video)
+1.  **Create a new custom agent** named "Fractured Nexus Story Editor."
+2.  **Point its data source** directly to your uploaded OneDrive directory (mirroring the Google Drive structure) to enable live tracking.
+3.  **Paste the system instructions** from the file `copilot_studio/copilot_studio_system_prompt.txt` (located in this repository) directly into the agent\'s core instructions configuration window.
 
-## Example Termux script: generate_video.sh
-```bash
-#!/data/data/com.termux/files/usr/bin/bash
-PROMPT="$1"
-# 1) Request script/storyboard from Pixelle-Video
-curl -X POST "http://<pixelle-host>:8501/api/prepare" -H "Content-Type: application/json" -d '{"prompt":"'$PROMPT'"}' -o /tmp/task.json
-# 2) Trigger image/video generation (batch)
-# 3) Trigger TTS
-# 4) Stitch with ffmpeg
-# 5) Move final file to shared storage
-mv ./output/final.mp4 /sdcard/Movies/musical-palm-tree-$(date +%s).mp4
-```
+## Character Canon Summary
 
-## Tasker Macro: Agent_Mode_Handler
-The repo contains an exported Tasker/MacroDroid macro (Agent_Mode_Handler...) that listens on a webhook and controls the phone. Extend it to POST prompts to the Termux bridge or to call `am` commands that run Termux scripts.
+| Attribute | Aetherion Voss | Kazeon |
+|---|---|---|
+| **Core Ideology** | **Preservation / Hope** (Refusing endings to allow potential to survive). | **Release / Peace** (Entropy as a necessary mercy to conclude suffering). |
+| **The Core Flaw** | Forcing reality to endure beyond its natural cycle, fracturing existence. | Witnessing suffering outlive its time and embracing an inevitable, crushing end. |
+| **Visual Theme** | First Lightning, dark celestial plate with glowing blue-white constellations. | Last Void, black-red singularity core, event-horizon eyes, ruin mantle. |
+| **Combat Style** | Strikes generate new cosmic branches, possibilities, and pathways. | Strikes conclude patterns, sever connections, and quiet the storm. |
 
-## Config Example (.env)
-```
-PIXELLE_API=http://<pixelle-host>:8501
-PIXELLE_KEY=optional_api_key
-OUTPUT_DIR=/sdcard/Movies
-```
+## Chapter Revision Roadmap Summary
 
-## Development Roadmap (priority order)
-1. Expand README and add termux scripts (this change).
-2. Create `termux/` example scripts and safe defaults for running on-device.
-3. Add a simple Flask bridge that accepts webhook POSTs from Tasker and invokes Termux scripts.
-4. Add documentation and a small demo: a Tasker task that sends a sample prompt and saves the video to /sdcard/Movies.
+This project shifts away from standard "Good vs. Evil" to the deeply tragic **Hope vs. Release** dynamic. Key revisions include:
 
-## References
-- Pixelle-Video repo: https://github.com/jveith100-tech/Pixelle-Video
-
-## Web UI Preview
-![Pixelle Web UI](https://github.com/jveith100-tech/Pixelle-Video/blob/main/resources/webui_en.png)
+-   **Prologue**: Explicitly isolate Aetherion as the sole architect of the Nexus. Position Kazeon as a silent observer. Inject the core warning: *unyielding preservation inevitably becomes a cage*.
+-   **Chapter 3 (The Fracture)**: Reduce information delivery speed. Frame the *Archive of Elorin* as an indictment of both characters\' extreme philosophies. Increase the physical and metaphysical mass of the *Nine Shards*.
+-   **Chapter 4 (The Prophecy)**: Deepen the core verse: *"existence shall look beyond itself and be seen."* Document Kazeon\'s calculation of an anomaly that defies entropy.
+-   **Chapters 5–8**: Introduce distinct perspectives from the Shard Worlds, juxtaposing populations desperate to escape entropy against those begging for the release of death. Use **Elyra** as an anchor for a pristine world dying under forced immortality.
+-   **Chapter 10 (The Shard of Time)**: Anchor specific chronological foreshadowing for the *Great Rift*. Insert Kazeon’s explicit rejection of a shared past.
+-   **Chapter 11 (The Shard of Spirit)**: Write an encounter where a survivor thanks Kazeon. Kazeon must coldly reject the sentiment: *“I did not save you; I merely denied the storm an ugly ending.”*
+-   **Chapter 15 (Echoes of the First Dawn)**: Strip any remaining "brotherhood" tropes. Apply the precise narrative line: *“They had not been friends. Friendship required a shared road. They had only shared a horizon.”*
+-   **Chapter 19 (The Conversation of Truth)**: Execute as the philosophical core of Book One, ensuring the verbatim inclusion of the core debate.
+-   **Chapters 20–23**: Embed the ideological debate directly into the kinetic action. Keep Kazeon absolutely calm, treating his strikes as logical conclusions rather than angry attacks.
+-   **Chapters 24–25 & Epilogue**: Remove the original resolution. Merge the *Great Rift* lore. The collision of their energies shatters the Nexus, revealing that it wasn\'t just a spine for reality—it was a **seal**. The entity beyond the Rift does not destroy; it *edits*. It removes concepts, histories, and memories entirely from existence. The epilogue\'s final line: *“The Battle of the Fractured Nexus had never been the end of the story. It was the moment the true enemy awakened.”*
