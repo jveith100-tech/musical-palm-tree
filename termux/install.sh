@@ -59,26 +59,33 @@ log_info "Log file: $LOG_FILE"
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && cd .. && pwd)"
 log_info "📁 Repository: $REPO_DIR"
 
-# Step 1: Update packages
-log_info "📦 Step 1: Updating package manager..."
-pkg update -y | tee -a "$LOG_FILE"
-pkg upgrade -y | tee -a "$LOG_FILE"
+# Helper function for cross-platform package installation
+install_packages() {
+    if command -v pkg &> /dev/null; then
+        # Termux environment
+        pkg update -y | tee -a "$LOG_FILE"
+        pkg upgrade -y | tee -a "$LOG_FILE"
+        pkg install -y "$@" | tee -a "$LOG_FILE"
+    elif command -v apt-get &> /dev/null; then
+        # Debian/Ubuntu environment
+        sudo apt-get update -y | tee -a "$LOG_FILE"
+        sudo apt-get install -y "$@" | tee -a "$LOG_FILE"
+    else
+        log_error "Unsupported package manager. Please install dependencies manually: $@"
+        return 1
+    fi
+}
 
-# Step 2: Install system dependencies
-log_info "📥 Step 2: Installing system dependencies..."
-pkg install -y \
-    python \
-    python-pip \
-    git \
-    ffmpeg \
-    imagemagick \
-    curl \
-    wget \
-    termux-api \
-    neovim \
-    nodejs \
-    cronie \
-    jq | tee -a "$LOG_FILE"
+# Step 1 & 2: Update and Install system dependencies
+log_info "📦 Installing system dependencies..."
+# Map Termux packages to apt packages if different
+PACKAGES="python3 python3-pip git ffmpeg imagemagick curl wget neovim nodejs jq"
+if command -v pkg &> /dev/null; then
+    PACKAGES="$PACKAGES termux-api cronie"
+else
+    PACKAGES="$PACKAGES cron"
+fi
+install_packages $PACKAGES
 
 # Step 2.5: Setup Neovim and GitHub Copilot
 log_info "📝 Step 2.5: Setting up Neovim and GitHub Copilot..."
@@ -140,8 +147,12 @@ fi
 # Step 4: Install Python dependencies
 log_info "🐍 Step 4: Installing Python libraries..."
 cd "$REPO_DIR"
-pip install --upgrade pip | tee -a "$LOG_FILE"
-pip install -r requirements.txt | tee -a "$LOG_FILE"
+python3 -m pip install --upgrade pip | tee -a "$LOG_FILE"
+if [ -f "requirements.txt" ]; then
+    python3 -m pip install -r requirements.txt | tee -a "$LOG_FILE"
+else
+    log_warn "requirements.txt not found, skipping python dependencies."
+fi
 
 # Step 5: Create directories
 log_info "📁 Step 5: Creating directories..."

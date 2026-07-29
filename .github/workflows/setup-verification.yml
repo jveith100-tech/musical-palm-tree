@@ -1,0 +1,52 @@
+name: Setup Verification
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build-and-verify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Environment
+        run: |
+          chmod +x setup.sh
+          chmod +x termux/install.sh
+          
+      - name: Run Main Setup (Non-Interactive)
+        env:
+          NONINTERACTIVE: 1
+        run: |
+          bash setup.sh
+
+      - name: Run Termux Install Script (Non-Interactive)
+        env:
+          NONINTERACTIVE: 1
+        run: |
+          # We run this to verify the logic, even though it's not a Termux environment
+          bash termux/install.sh
+
+      - name: Verify Installation Results
+        run: |
+          echo "Checking directories..."
+          [ -d "output" ] && echo "✅ Output directory created"
+          [ -d "videos" ] && echo "✅ Videos directory created"
+          [ -d "frames" ] && echo "✅ Frames directory created"
+          [ -d "audio" ] && echo "✅ Audio directory created"
+          
+          echo "Checking log files..."
+          LOG_DIR="$HOME/.logs/musical-palm-tree"
+          [ -f "$LOG_DIR/setup.log" ] && echo "✅ Setup log found"
+          [ -f "$LOG_DIR/install.log" ] && echo "✅ Install log found"
+          
+          echo "Checking verification reports..."
+          VERIF_DIR="$LOG_DIR/verification"
+          [ -f "$VERIF_DIR/verification_latest.txt" ] && echo "✅ Verification text report found"
+          [ -f "$VERIF_DIR/verification_latest.json" ] && echo "✅ Verification JSON report found"

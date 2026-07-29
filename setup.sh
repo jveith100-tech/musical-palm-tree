@@ -55,23 +55,42 @@ fi
 log_info "🚀 Starting Phone AI Automation System Setup..."
 log_info "Log file: $LOG_FILE"
 
-# Update package manager
-log_info "📦 Updating packages..."
-pkg update -y | tee -a "$LOG_FILE"
-pkg upgrade -y | tee -a "$LOG_FILE"
+# Helper function for cross-platform package installation
+install_packages() {
+    if command -v pkg &> /dev/null; then
+        # Termux environment
+        pkg update -y | tee -a "$LOG_FILE"
+        pkg upgrade -y | tee -a "$LOG_FILE"
+        pkg install -y "$@" | tee -a "$LOG_FILE"
+    elif command -v apt-get &> /dev/null; then
+        # Debian/Ubuntu environment
+        sudo apt-get update -y | tee -a "$LOG_FILE"
+        sudo apt-get install -y "$@" | tee -a "$LOG_FILE"
+    else
+        log_error "Unsupported package manager. Please install dependencies manually: $@"
+        return 1
+    fi
+}
 
-# Install system dependencies
-log_info "📥 Installing system dependencies..."
-pkg install -y python python-pip git ffmpeg imagemagick | tee -a "$LOG_FILE"
+# Step 1 & 2: Update and Install system dependencies
+log_info "📦 Installing system dependencies..."
+install_packages python3 python3-pip git ffmpeg imagemagick
 
-# Install Python dependencies
+# Step 3: Install Python dependencies
 log_info "🐍 Installing Python libraries..."
-pip install --upgrade pip | tee -a "$LOG_FILE"
-pip install -r requirements.txt | tee -a "$LOG_FILE"
+python3 -m pip install --upgrade pip | tee -a "$LOG_FILE"
+if [ -f "requirements.txt" ]; then
+    python3 -m pip install -r requirements.txt | tee -a "$LOG_FILE"
+else
+    log_warn "requirements.txt not found, skipping python dependencies."
+fi
 
-# Install termux-api (for phone control)
-log_info "📱 Setting up termux-api..."
-pkg install -y termux-api | tee -a "$LOG_FILE"
+# Step 4: Install termux-api (only if in Termux)
+if command -v pkg &> /dev/null; then
+    log_info "📱 Setting up termux-api..."
+    pkg install -y termux-api | tee -a "$LOG_FILE"
+fi
+
 
 # Create directories
 log_info "📁 Creating directories..."
