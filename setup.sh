@@ -96,6 +96,10 @@ fi
 # Create directories
 log_info "📁 Creating directories..."
 mkdir -p output videos frames audio
+if command -v pkg &> /dev/null; then
+    # Only try creating /sdcard directories in Termux
+    mkdir -p "/sdcard/Movies/musical-palm-tree" || log_warn "Could not create /sdcard directory. Ensure storage permissions are granted."
+fi
 
 log_success "✅ Installation complete!"
 log_info ""

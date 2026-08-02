@@ -158,7 +158,10 @@ fi
 log_info "📁 Step 5: Creating directories..."
 mkdir -p "$HOME/.cache/musical-palm-tree"
 mkdir -p "$HOME/.logs/musical-palm-tree"
-mkdir -p "/sdcard/Movies/musical-palm-tree"
+if command -v pkg &> /dev/null; then
+    # Only try creating /sdcard directories in Termux
+    mkdir -p "/sdcard/Movies/musical-palm-tree" || log_warn "Could not create /sdcard directory. Ensure storage permissions are granted."
+fi
 
 # Step 6: Make scripts executable
 log_info "🔧 Step 6: Setting permissions..."
