@@ -3,13 +3,14 @@
 # Run this in Termux: bash setup.sh
 
 # --- Configuration ---
-LOG_FILE="/home/ubuntu/.logs/musical-palm-tree/setup.log"
+# Use $HOME instead of hardcoded path for better portability
+LOG_FILE="$HOME/.logs/musical-palm-tree/setup.log"
 
 # --- Colors ---
-RED=\033[0;31m
-GREEN=\033[0;32m
-YELLOW=\033[1;33m
-NC=\033[0m # No Color
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
 
 # --- Logging Functions ---
 mkdir -p "$(dirname "$LOG_FILE")"
